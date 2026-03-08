@@ -1,5 +1,7 @@
 package fi.jyu.ohj2.nico.todo.model;
 
+import fi.jyu.ohj2.nico.todo.persistance.RepositoryException;
+import fi.jyu.ohj2.nico.todo.persistance.TehtavaRepository;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.*;
@@ -16,32 +18,38 @@ public class Tehtavakokoelma {
             tehtava -> new Observable[]{tehtava.tehtyProperty()}
     );
 
-    private final Path tiedostoPolku = Path.of("tehtavat.json");
-    private final ObjectMapper mapper = new ObjectMapper();
 
-    public Tehtavakokoelma() {
-        tehtavat.addListener((ListChangeListener<Tehtava>) change -> {
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final TehtavaRepository repository;
+
+
+    public Tehtavakokoelma(TehtavaRepository repository) {
+        this.repository = repository;
+
+        this.tehtavat.addListener((ListChangeListener<Tehtava>) change -> {
             tallenna();
         });
     }
+
 
     public ObservableList<Tehtava> getTehtavat() {
         return tehtavat;
     }
 
     public void tallenna() {
-        mapper.writeValue(tiedostoPolku, tehtavat);
+        try {
+            repository.tallenna(tehtavat);
+        } catch (RepositoryException e) {
+            IO.println(e.getMessage());
+        }
     }
 
     public void lataa() {
-        if (Files.notExists(tiedostoPolku)) {
-            return;
-        }
         try {
-            List<Tehtava> kaikkiTehtavat = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            List<Tehtava> kaikkiTehtavat = repository.lataa();
             tehtavat.addAll(kaikkiTehtavat);
-        } catch (JacksonException je) {
-            IO.println("JSONin lukeminen epäonnistui: " + je.getMessage());
+        } catch (RepositoryException e) {
+            IO.println(e.getMessage());
         }
     }
 

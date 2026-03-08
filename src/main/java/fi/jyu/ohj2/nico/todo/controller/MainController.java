@@ -2,6 +2,7 @@ package fi.jyu.ohj2.nico.todo.controller;
 
 import fi.jyu.ohj2.nico.todo.App;
 import fi.jyu.ohj2.nico.todo.model.Tehtavakokoelma;
+import fi.jyu.ohj2.nico.todo.persistance.JsonTehtavaRepository;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -43,7 +44,8 @@ public class MainController implements Initializable {
     @FXML
     private Button poistaValittuPainike;
 
-    private Tehtavakokoelma tehtavakokoelma = new Tehtavakokoelma();
+    private Tehtavakokoelma tehtavakokoelma = new Tehtavakokoelma(new JsonTehtavaRepository(Path.of("tehtavat.json")));
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
